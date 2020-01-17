@@ -48,7 +48,6 @@ def sample_utility(..., n_samples):
     '''
     Sample a utility for ARA
     '''
-
     return
 
 
