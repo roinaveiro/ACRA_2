@@ -7,8 +7,9 @@ Discriminative models for the ARA approach to Adversarial Classification
 '''
 
 def create_logistic_regression_model(
-        penalty,
-        dual,
+        penalty='l2',
+        dual=False,
+        tol=1e-4,
         C=1.0,
         fit_intercept=True,
         intercept_scaling=1,
@@ -18,6 +19,7 @@ def create_logistic_regression_model(
 
     penalty -- norm used in the penalization (string)
     dual -- dual or primal formulation (boolean)
+    tol -- tolerance for stopping criteria
     C -- inverse of regulation strength (float)
     fit_intercept -- if a constant should be added to decion function (boolean)
     intercept_scaliing -- if True, instance vector x becomes [x, self.intercept_scaling] (float)
