@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from data import *
 from utils import *
+from models import *
+from sklearn.linear_model import LogisticRegression
 
 '''
 Relevant samplers for the ARA approach to Adversarial Classification
@@ -24,21 +26,20 @@ def sample_transformed_instance(x, y, n_samples, mode):
     return
 
 
-def sample_label(X,clf,n_samples, mode):
+def sample_label(X, clf, n_samples=0, mode='evaluate'):
     '''
     Sample or evaluate p(y|x)
-    * If mode is "sample", a sample is obtained (mode==1)
-    * If mode is "evaluate", probability is computed and returned (mode==2)
+    * If mode is 'sample', a sample is obtained
+    * If mode is 'evaluate', probability is computed and returned
     X -- dataset (ndarray)
-    clf -- your favority classifier (obj)
+    clf -- classifier (obj)
     n_samples -- number of samples to get
     '''
-    if mode==1:
-        predictProbaValues = clf.predict_proba(X)
-        np.repeat(np.atleast_3d(predictProbaValues),n_samples,2)
-        return np.repeat(np.atleast_3d(predictProbaValues),n_samples,2)
-    else:
+    if mode == 'evaluate':
         return clf.predict_proba(X)
+
+    if mode == 'sample':
+        pass
 
 
 def sample_original_instance(x_mod, n_samples):
@@ -99,9 +100,10 @@ def sample_original_instance_star(x_mod, n_samples, rho, x=None, mode='sample', 
 if __name__ == '__main__':
 
     X, y = get_spam_data("data/uciData.csv")
+    clf = LogisticRegression()
+    clf.fit(X,y)
 
     x = X[0]
     samples = sample_original_instance_star(x, n_samples=10, rho=10)
-    print(samples)
-
-    print( get_bin_probs(3, 2) )
+    ss = sample_label(samples, clf)
+    print( np.mean(ss, axis=0)  )
