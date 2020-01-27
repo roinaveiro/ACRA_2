@@ -24,20 +24,21 @@ def sample_transformed_instance(x, y, n_samples, mode):
     return
 
 
-def sample_label(X,clf,ut, mode):
+def sample_label(X,clf,n_samples, mode):
     '''
     Sample or evaluate p(y|x)
     * If mode is "sample", a sample is obtained (mode==1)
     * If mode is "evaluate", probability is computed and returned (mode==2)
     X -- dataset (ndarray)
     clf -- your favority classifier (obj)
-    ut -- utility matrix
+    n_samples -- number of samples to get
     '''
     if mode==1:
-        aux_matrix = np.dot(ut,clf.predict_proba(X,clf).transpose())
-        return (np.argmax(aux_matrix,axis=0))
+        predictProbaValues = clf.predict_proba(X)
+        np.repeat(np.atleast_3d(predictProbaValues),n_samples,2)
+        return np.repeat(np.atleast_3d(predictProbaValues),n_samples,2)
     else:
-        return np.dot(ut,clf.predict_proba(X,clf).transpose())
+        return clf.predict_proba(X)
 
 
 def sample_original_instance(x_mod, n_samples):
