@@ -46,22 +46,35 @@ def sample_original_instance(x_mod, n_samples):
     '''
     Sample or evaluate p(x|x')
     '''
-
     return
 
-
-def sample_utility(alpha, beta, n_samples):
+def sample_utility(c, i, attacker_ut, n_samples):
     '''
     Sample a utility for ARA
-    '''
-    ut = np.random.beta(alpha, beta, n_samples)
-    return ut
 
-def sample_probability(n_samples):
+    * c -- label predicted by classifier
+    * i -- real label of instance
+    * attacker_ut -- utility matrix with samplers
+    * n_samples -- number of samples to get
+    
     '''
-    Sample a probability for ARA
+    ut_samples = attacker_ut[c,i](n_samples)
+    return ut_samples
+
+def sample_probability_c(x_mod, c, sampler, n_samples_in, n_samples, var):
     '''
-    pass
+    Sample a probability for ARA. DOUBLE-CHECK
+    '''
+    sample = sampler(x_mod, n_samples_in)
+
+    probs = sample_label(sample, clf,
+        n_samples=0, mode='evaluate')[:,c]
+
+    mean = np.mean(probs, axis = 0)
+
+    alpha, beta = get_beta_parameters(mean, var)
+
+    return np.random.beta(alpha, beta, n_samples)
     #prob = np.random.beta(..., ..., n_samples)
     #return prob
 
@@ -107,3 +120,6 @@ if __name__ == '__main__':
     samples = sample_original_instance_star(x, n_samples=10, rho=10)
     ss = sample_label(samples, clf)
     print( np.mean(ss, axis=0)  )
+
+    sampler = lambda x, n: sample_original_instance_star(x, n, rho=10)
+    print( sample_probability_c(x, 1, sampler, 10, 100, 0.9) )

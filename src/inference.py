@@ -21,35 +21,31 @@ def predict_unaware(x_mod, ut, clf):
 
 
 
-def predict_heuristic(x_mod, ut, clf, n_samples, rho, heuristic='uniform'):
+def predict_aware(x_mod, ut, clf, sampler, n_samples):
     '''
-    Prediction using distance-based heuristic. PARALLELIZE!
+    Prediction using adversary aware classifier.
+
+    * x_mod -- instance to predict
+    * ut -- utility matrix
+    * clf -- underlying classifier
+    * sampler -- a function to sample from p(x|x')
+    * n_samples -- number of MC samples
     '''
+    
+    original_sample = sampler(x_mod, n_samples)
 
-    if heuristic == 'uniform':
-        original_sample = sample_original_instance_star(x_mod, n_samples,
-            rho, x=None, mode='sample', heuristic='uniform')
-        original_probabilities = sample_label(original_sample, clf,
-            n_samples=0, mode='evaluate')
-        exp_utility = np.dot( ut, np.mean(original_probabilities, axis = 0).transpose() )
-        return np.argmax(exp_utility, axis=0)
+    original_probabilities = sample_label(original_sample, clf,
+        n_samples=0, mode='evaluate')
 
-    if heuristic == 'penalized_distance':
-        pass
+    exp_utility = np.dot( ut, np.mean(original_probabilities, axis = 0).transpose() )
 
-def predict_heuristic_par(i,X,ut,clf,n_samples,rho,heuristic):
-    return predict_heuristic(X[i], ut, clf, n_samples, rho, heuristic='uniform')
+    return np.argmax(exp_utility, axis=0)
 
-def predict_ARA(x_mod, N):
-    '''
-    Prediction using ARA
-    '''
-    #x = sample_original_instance(..., x_mod, n_samples=N)
-    pass
+
 
 if __name__ == '__main__':
 
-    X, y = get_spam_data("../data/uciData.csv")
+    X, y = get_spam_data("data/uciData.csv")
     clf = LogisticRegression()
     clf.fit(X,y)
     ut = np.array([[1,0], [0,1]])
@@ -57,13 +53,16 @@ if __name__ == '__main__':
 
     print( predict_unaware(x, ut, clf) )
 
+    sampler = lambda x, n: sample_original_instance_star(x, n,
+        rho=2, x=None, mode='sample', heuristic='uniform')
+
     # Predict for one instance
-    print(predict_heuristic(X[0], ut, clf, 10, 2, heuristic='uniform'))
+    print(predict_aware(X[0], ut, clf, sampler, n_samples=10))
     # Predict for more instances
-    n_samples=10
-    rho=2
-    rows = 30 # predict for 10 samples
+    #n_samples=10
+    #rho=2
+    #rows = 30 # predict for 10 samples
     # rows = X.shape[0] # predict for all samples
-    num_cores=4 # it depends of the processor
-    vector_labels = Parallel(n_jobs=num_cores)(delayed(predict_heuristic_par)(i,X, ut, clf, n_samples, rho, heuristic='uniform') for i in range(rows))
-    print("Vector with label predictions: ", vector_labels)
+    # num_cores=4 # it depends of the processor
+    # vector_labels = Parallel(n_jobs=num_cores)(delayed(predict_heuristic_par)(i,X, ut, clf, n_samples, rho, heuristic='uniform') for i in range(rows))
+    # print("Vector with label predictions: ", vector_labels)
