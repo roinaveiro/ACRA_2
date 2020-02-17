@@ -6,6 +6,11 @@ from models import *
 from samplers import *
 from sklearn.linear_model import LogisticRegression
 from joblib import Parallel, delayed
+import warnings
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+
 
 '''
 Inference functions for the ARA approach to Adversarial Classification
@@ -40,14 +45,26 @@ def predict_aware(x_mod, sampler, params):
     # Return index with maximum utility
     return np.argmax(exp_utility, axis=0)
 
+def parallel_predict_aware(X_test, sampler, params):
+    def predict_aware_par(i, X_test, sampler, params):
+        return predict_aware(X_test[i], sampler, params)
+    ##
+    num_cores=4 # it depends of the processor
+    preds = Parallel(n_jobs=num_cores)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(3))
+    return np.array(preds)
+
 
 
 if __name__ == '__main__':
 
     X, y = get_spam_data("data/uciData.csv")
     X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.3)
-    clf = LogisticRegression()
+    clf = LogisticRegression(penalty='l1', C=0.01)
     clf.fit(X,y)
+    ## Get "n" more important covariates
+    n=5
+    weights = np.abs(clf.coef_)
+    S = (-weights).argsort()[0,:n]
 
     params = {
                 "l"      : 1,    # Good instances are y=0,1,...,l-1. Rest are bad
@@ -58,14 +75,15 @@ if __name__ == '__main__':
                                             # what the classifier says, columns
                                             # real label!!!
                 "sampler_star" : lambda x: sample_original_instance_star(x,
-                 n_samples=15, rho=1, x=None, mode='sample', heuristic='uniform'),
+                 n_samples=15, rho=2, x=None, mode='sample', heuristic='uniform'),
                  ##
                  "clf" : clf,
-                 "tolerance" : 1, # For ABC
+                 "tolerance" : 3, # For ABC
                  "classes" : np.array([0,1]),
-                 "S"       : np.array([1,3]), # Set of index representing covariates with
+                 "S"       : S, # Set of index representing covariates with
                                              # "sufficient" information
-                 "X_train"   : X_train
+                 "X_train"   : X_train,
+                 "distance_to_original" : 2 # Numbers of changes allowed to adversary
             }
 
     #ut = np.array([[1,0], [0,1]])
@@ -75,19 +93,21 @@ if __name__ == '__main__':
 
     sampler2 = lambda x: sample_original_instance(x, 3, params)
 
-    print( predict_unaware(X_test[0], params["ut"], clf) )
+    if True:
+        #
+        print( predict_unaware(X_test[0], params["ut"], clf) )
+        # Predict for one instance
+        print(predict_aware(X_test[0], sampler2, params))
 
-    # Predict for one instance
-    print(predict_aware(X_test[0], sampler2, params))
-
-
+    if False:
+        pr = parallel_predict_aware(X_test, sampler2, params)
+        print(pr)
     # Predict for more instances
     #n_samples=10
     #rho=2
     #rows = 30 # predict for 10 samples
     # rows = X.shape[0] # predict for all samples
     # num_cores=4 # it depends of the processor
-    # vector_labels = Parallel(n_jobs=num_cores)(delayed(predict_heuristic_par)(i,X, ut, clf, n_samples, rho, heuristic='uniform') for i in range(rows))
     # print("Vector with label predictions: ", vector_labels)
     #def predict_heuristic_par(i,X,ut,clf,n_samples,rho,heuristic):
     #    return predict_heuristic(X[i], ut, clf, n_samples, rho, heuristic='uniform')

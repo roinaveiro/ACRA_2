@@ -1,13 +1,13 @@
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-
+from data import *
 '''
 Discriminative models for the ARA approach to Adversarial Classification
 '''
 
 def create_logistic_regression_model(
-        penalty='l2',
+        penalty='l1',
         dual=False,
         tol=1e-4,
         C=1.0,
@@ -15,7 +15,7 @@ def create_logistic_regression_model(
         intercept_scaling=1,
         random_state=None
 ):
-    '''create a logistic regression model 
+    '''create a logistic regression model
 
     penalty -- norm used in the penalization (string)
     dual -- dual or primal formulation (boolean)
@@ -39,13 +39,6 @@ def create_logistic_regression_model(
         random_state=random_state)
     return clf_LR
 
-def logistic_regression_predict(X,clf):
-    '''Obtain probability estimates of logistic regression model
-    X -- Samples (ndarray)
-    clf -- logistic regression model
-    return a ndarray with the probability estimates of the samples given
-    '''
-    return clf.predict_proba(X)
 
 def create_random_forest_model(
         n_estimators=100,
@@ -67,7 +60,7 @@ def create_random_forest_model(
         class_weight=None
         ):
     '''create a random forest model
-    
+
     n_estimators -- number of trees (integer),
     criterion -- measures the quality of a split ("gini","entropy"),
     max_depth -- maximum depth of the tree (integer),
@@ -107,14 +100,9 @@ def create_random_forest_model(
     class_weight=class_weight)
     return clfRF
 
-def random_forest_predict(X,clf):
-    '''Obtain probability estimates of random forest model
-    X -- Samples (ndarray)
-    clf -- random forest model
-    return a ndarray with the probability estimates of the samples given
-    '''
-    return clf.predict_proba(X)
 
-    
-
+if __name__ == '__main__':
+    X, y = get_spam_data("data/uciData.csv")
+    X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.3)
+    #
     

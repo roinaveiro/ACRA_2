@@ -53,7 +53,7 @@ def sample_transformed_instance(x, y, params):
     else:
         S = params["S"]
         uts = sample_utility(y, params)
-        perturbations = original_instances_given_dist(x[S], n=2)
+        perturbations = original_instances_given_dist(x[S], n=params["distance_to_original"])
         attacks = np.ones([perturbations.shape[0], x.shape[0]], dtype=int)*x
         attacks[:,S] = perturbations
         prob_matrix = np.zeros([perturbations.shape[0], l])
