@@ -15,7 +15,7 @@ def change_instance(x, set):
     return x_mod
 
 def distance(x, x_mod): # Just for the Bag-Of-Words representation!
-    return np.sum( np.aps(x - x_mod) )
+    return np.sum( np.abs(x - x_mod) )
 
 def get_beta_parameters(mu, k):
     '''

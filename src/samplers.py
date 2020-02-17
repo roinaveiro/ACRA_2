@@ -9,28 +9,34 @@ from sklearn.linear_model import LogisticRegression
 Relevant samplers for the ARA approach to Adversarial Classification
 '''
 
-def sample_original_instance(x_mod, n_samples):
+def sample_original_instance(x_mod, n_samples, params):
     '''
     ABC function to sample from p(x|x')
     '''
+    S = params["S"]
+    X_train = params["X_train"]
+    clf = params["clf"]
     tolerance = params["tolerance"]
-    samples = np.array([n_samples, x_mod.shape[0]])
-    for i in range(n_samples):
-        x = sample_instance()
+    samples = np.zeros([n_samples, x_mod.shape[0]], dtype=int)
+    for i in range(n_samples): ## Parallelize
+        x = sample_instance(X_train)[0] ## Watch out! Dimensions
         probs = sample_label(x, clf)[0]
-        dist = params["tolerance"] + 1
+        dist = params["tolerance"] + 1 # Condition to enter in the while loop
+        ##
         while dist > tolerance:
             y = np.random.choice(params["classes"], p=probs)
             x_tilde = sample_transformed_instance(x, y, params)
-            dist = distance(x_tilde, x_mod)
+            dist = distance(x_tilde[S], x_mod[S])
         samples[i] = x_tilde
     return samples
 
-def sample_instance(n_samples=1):
+def sample_instance(X_train, n_samples=1):
     '''
     Get n_samples from p(x)
+    Easy version: get samples from training set
     '''
-    return
+    idx = np.random.choice(range(X_train.shape[0]), size=n_samples)
+    return X_train[idx]
 
 
 
@@ -45,16 +51,19 @@ def sample_transformed_instance(x, y, params):
     if y < l:
         return x
     else:
+        S = params["S"]
         uts = sample_utility(y, params)
-        perturbations = original_instances_given_dist(x, n=2)
+        perturbations = original_instances_given_dist(x[S], n=2)
+        attacks = np.ones([perturbations.shape[0], x.shape[0]], dtype=int)*x
+        attacks[:,S] = perturbations
         prob_matrix = np.zeros([perturbations.shape[0], l])
         ##
         for i in range(perturbations.shape[0]): ## ESTO ES UN CHOCHO
-            prob_matrix[i] = sample_probability(x, params)
+            prob_matrix[i] = sample_probability(attacks[i], params)
         ##
         expected_ut = np.dot(prob_matrix, uts)
         idx = np.argmax(expected_ut)
-        return perturbations[idx]
+        return attacks[idx]
 
 
 def sample_label(X, clf, mode='evaluate', n_samples=0):
@@ -153,7 +162,9 @@ if __name__ == '__main__':
 
     X, y = get_spam_data("data/uciData.csv")
     clf = LogisticRegression()
-    clf.fit(X,y)
+    X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.3)
+    clf.fit(X_train, y_train)
+
 
     params = {
                 "l"      : 1,    # Good instances are y=0,1,...,l-1. Rest are bad
@@ -165,21 +176,12 @@ if __name__ == '__main__':
                 "sampler_star" : lambda x: sample_original_instance_star(x,
                  n_samples=15, rho=1, x=None, mode='sample', heuristic='uniform'),
                  "clf" : clf,
-                 "tolerance" : 1 # For ABC
-                 "classes" : np.array([0,1])
+                 "tolerance" : 1, # For ABC
+                 "classes" : np.array([0,1]),
+                 "S"       : np.array([1,3]), # Set of index representing covariates with
+                                             # "sufficient" information
+                 "X_train"   : X_train
             }
-
-    x = X[0]
-    y = y[0]
-    probs = sample_label(x, clf)
-    ajaja = np.random.choice(np.array([0,1]), p=probs[0])
-    print(ajaja)
-    #print sample_probability(x, params)
-    #print(sample_utility(1, params).shape)
-    #print(y)
-    #print(sample_transformed_instance(x, y, params))
-
-
 
 
     if False:
