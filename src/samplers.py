@@ -43,7 +43,7 @@ def sample_instance(X_train, n_samples=1):
 def sample_transformed_instance(x, y, params):
     '''
     For ABC, sample just one instance of p(x'|x,y)
-    * Good labels are indexed as l, l+1, ..., k
+    * Good labels are indexed as 0,1,...,l-1
     * If mode is "sample", a sample is obtained
     * If mode is "evaluate", probability is computed and returned
     '''
@@ -95,7 +95,7 @@ def sample_utility(i, params):
 
     '''
     l = params["l"]
-    assert i >= l,  "Class is good"
+    assert i >= l,  "Watchout class is good"
     ut_mat = params["ut_mat"]
     ut_samples = np.zeros([params["l"],1])
     var = params["var"]

@@ -50,7 +50,7 @@ def parallel_predict_aware(X_test, sampler, params):
         return predict_aware(X_test[i], sampler, params)
     ##
     num_cores=4 # it depends of the processor
-    preds = Parallel(n_jobs=num_cores)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(3))
+    preds = Parallel(n_jobs=num_cores)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(X_test.shape[0]))
     return np.array(preds)
 
 
@@ -91,15 +91,15 @@ if __name__ == '__main__':
     sampler1 = lambda x: sample_original_instance_star(x, 15,
          rho=2, x=None, mode='sample', heuristic='uniform')
 
-    sampler2 = lambda x: sample_original_instance(x, 3, params)
+    sampler2 = lambda x: sample_original_instance(x, n_samples= 3, params = params)
 
-    if True:
+    if False:
         #
         print( predict_unaware(X_test[0], params["ut"], clf) )
         # Predict for one instance
         print(predict_aware(X_test[0], sampler2, params))
 
-    if False:
+    if True:
         pr = parallel_predict_aware(X_test, sampler2, params)
         print(pr)
     # Predict for more instances
