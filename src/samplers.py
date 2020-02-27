@@ -4,6 +4,7 @@ from data import *
 from utils import *
 from models import *
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
 '''
 Relevant samplers for the ARA approach to Adversarial Classification

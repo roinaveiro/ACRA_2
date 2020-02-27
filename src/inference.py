@@ -4,7 +4,9 @@ import pandas as pd
 from data import *
 from models import *
 from samplers import *
+from attacks import *
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 from joblib import Parallel, delayed
 import warnings
 
@@ -54,16 +56,17 @@ def parallel_predict_aware(X_test, sampler, params):
     return np.array(preds)
 
 
-
 if __name__ == '__main__':
 
     X, y = get_spam_data("data/uciData.csv")
     X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.3)
-    clf = LogisticRegression(penalty='l1', C=0.01)
-    clf.fit(X,y)
+    clf = LogisticRegression(penalty='l1', C=0.005)
+    clf.fit(X_train,y_train)
     ## Get "n" more important covariates
     n=5
     weights = np.abs(clf.coef_)
+    print(weights)
+    pass
     S = (-weights).argsort()[0,:n]
 
     params = {
@@ -75,7 +78,7 @@ if __name__ == '__main__':
                                             # what the classifier says, columns
                                             # real label!!!
                 "sampler_star" : lambda x: sample_original_instance_star(x,
-                 n_samples=15, rho=2, x=None, mode='sample', heuristic='uniform'),
+                 n_samples=40, rho=2, x=None, mode='sample', heuristic='uniform'),
                  ##
                  "clf" : clf,
                  "tolerance" : 3, # For ABC
@@ -86,22 +89,25 @@ if __name__ == '__main__':
                  "distance_to_original" : 2 # Numbers of changes allowed to adversary
             }
 
+    print(accuracy_score(y_test, clf.predict(X_test)))
+
+    ## Attack test set
+    attack_ARA(X[0], y[0], params)
+    X_att = attack_set(X_test, y_test, params)
+
+    print(accuracy_score(y_test, clf.predict(X_att)))
+
     #ut = np.array([[1,0], [0,1]])
     #x = np.expand_dims(X[0], axis=0)
-    sampler1 = lambda x: sample_original_instance_star(x, 15,
+    sampler1 = lambda x: sample_original_instance_star(x, 40,
          rho=2, x=None, mode='sample', heuristic='uniform')
 
-    sampler2 = lambda x: sample_original_instance(x, n_samples= 3, params = params)
+    sampler2 = lambda x: sample_original_instance(x, n_samples= 30, params = params)
+    pr = parallel_predict_aware(X_att, sampler2, params)
 
-    if False:
-        #
-        print( predict_unaware(X_test[0], params["ut"], clf) )
-        # Predict for one instance
-        print(predict_aware(X_test[0], sampler2, params))
+    print(accuracy_score(y_test, pr) )
 
-    if True:
-        pr = parallel_predict_aware(X_test, sampler2, params)
-        print(pr)
+
     # Predict for more instances
     #n_samples=10
     #rho=2

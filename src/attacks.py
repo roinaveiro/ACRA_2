@@ -7,7 +7,7 @@ from joblib import Parallel, delayed
 Attacks for the ARA approach to Adversarial Classification
 '''
 
-def compute_probability(x, param):
+def compute_probability(x, params):
     l = params["l"]
     probs = np.zeros(l)
     for c in range(l):
@@ -24,8 +24,6 @@ def attack_ARA(x, y, params):
     if y < l:
         return x
     else:
-        pass
-
         S = params["S"]
         ut_mat = params["ut_mat"]
         uts = np.expand_dims(ut_mat[:params["l"],1], axis=1)
@@ -43,23 +41,14 @@ def attack_ARA(x, y, params):
         idx = np.argmax(expected_ut)
         return attacks[idx]
 
-def parallel_predict_aware(X_test, sampler, params):
-    def predict_aware_par(i, X_test, sampler, params):
-        return predict_aware(X_test[i], sampler, params)
-    ##
-    num_cores=4 # it depends of the processor
-    preds = Parallel(n_jobs=num_cores)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(3))
-    return np.array(preds)
 
-def attack_set(X, y, attack):
-    def attack_par(i, X, y,):
-        return attack(X[i], y[i])
+def attack_par(i, X, y, params):
+    return attack_ARA(X[i], y[i], params)
+
+def attack_set(X, y, params):
     num_cores=4 # it depends of the processor
-    atts = Parallel(n_jobs=num_cores)(delayed(attack_par)(i, X, y) for i in range(X.shape[0]))
+    atts = Parallel(n_jobs=num_cores)(delayed(attack_par)(i, X, y, params) for i in range(X.shape[0]))
     return np.array(atts)
-
-
-
 
 
 
@@ -95,7 +84,10 @@ if __name__ == '__main__':
             }
 
 
-    attack = lambda x, y: attack_ARA(x, y, params)
-    X_att = attack_set(X_test, y_test, attack)
-    print(X_att)
-    print(X_att.shape)
+    # attack = lambda x, y: attack_ARA(x, y, params)
+    print(accuracy_score(y_test, clf.predict(X_test)))
+
+    ## Attack test set
+    X_att = attack_set(X_test, y_test, params)
+
+    print(accuracy_score(y_test, clf.predict(X_att)))
