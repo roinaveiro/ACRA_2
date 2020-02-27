@@ -20,15 +20,15 @@ def sample_original_instance(x_mod, n_samples, params):
     tolerance = params["tolerance"]
     samples = np.zeros([n_samples, x_mod.shape[0]], dtype=int)
     for i in range(n_samples): ## Parallelize
-        x = sample_instance(X_train)[0] ## Watch out! Dimensions
-        probs = sample_label(x, clf)[0]
         dist = params["tolerance"] + 1 # Condition to enter in the while loop
         ##
         while dist > tolerance:
+            x = sample_instance(X_train)[0] ## Watch out! Dimensions
+            probs = sample_label(x, clf)[0]
             y = np.random.choice(params["classes"], p=probs)
             x_tilde = sample_transformed_instance(x, y, params)
             dist = distance(x_tilde[S], x_mod[S])
-        samples[i] = x_tilde
+        samples[i] = x
     return samples
 
 def sample_instance(X_train, n_samples=1):
