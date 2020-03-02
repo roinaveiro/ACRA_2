@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     X, y = get_spam_data("data/uciData.csv")
     X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.1)
-    clf = LogisticRegression(penalty='l1', C=0.01)
+    clf = LogisticRegression(penalty='l1', C=0.01, solver='saga')
     clf.fit(X_train,y_train)
     ## Get "n" more important covariates
     n=11
