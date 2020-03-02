@@ -51,7 +51,7 @@ def parallel_predict_aware(X_test, sampler, params):
     def predict_aware_par(i, X_test, sampler, params):
         return predict_aware(X_test[i], sampler, params)
     ##
-    num_cores=4 # it depends of the processor
+    num_cores=10 # it depends of the processor
     preds = Parallel(n_jobs=num_cores)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(X_test.shape[0]))
     return np.array(preds)
 
@@ -59,14 +59,13 @@ def parallel_predict_aware(X_test, sampler, params):
 if __name__ == '__main__':
 
     X, y = get_spam_data("data/uciData.csv")
-    X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.3)
-    clf = LogisticRegression(penalty='l1', C=0.005)
+    X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.1)
+    clf = LogisticRegression(penalty='l1', C=0.01)
     clf.fit(X_train,y_train)
     ## Get "n" more important covariates
-    n=5
+    n=11
     weights = np.abs(clf.coef_)
     print(weights)
-    pass
     S = (-weights).argsort()[0,:n]
 
     params = {
@@ -78,34 +77,34 @@ if __name__ == '__main__':
                                             # what the classifier says, columns
                                             # real label!!!
                 "sampler_star" : lambda x: sample_original_instance_star(x,
-                 n_samples=40, rho=2, x=None, mode='sample', heuristic='uniform'),
+                 n_samples=40, rho=1, x=None, mode='sample', heuristic='uniform'),
                  ##
                  "clf" : clf,
-                 "tolerance" : 3, # For ABC
+                 "tolerance" : 0, # For ABC
                  "classes" : np.array([0,1]),
                  "S"       : S, # Set of index representing covariates with
                                              # "sufficient" information
                  "X_train"   : X_train,
-                 "distance_to_original" : 2 # Numbers of changes allowed to adversary
+                 "distance_to_original" : 1 # Numbers of changes allowed to adversary
             }
 
-    print(accuracy_score(y_test, clf.predict(X_test)))
+    print('Adversary Unaware Accuracy Clean Data', accuracy_score(y_test, clf.predict(X_test)))
 
     ## Attack test set
     attack_ARA(X[0], y[0], params)
     X_att = attack_set(X_test, y_test, params)
 
-    print(accuracy_score(y_test, clf.predict(X_att)))
+    print('Adversary Unaware Accuracy Attacked Data', accuracy_score(y_test, clf.predict(X_att)))
 
     #ut = np.array([[1,0], [0,1]])
     #x = np.expand_dims(X[0], axis=0)
     sampler1 = lambda x: sample_original_instance_star(x, 40,
          rho=2, x=None, mode='sample', heuristic='uniform')
 
-    sampler2 = lambda x: sample_original_instance(x, n_samples= 30, params = params)
+    sampler2 = lambda x: sample_original_instance(x, n_samples= 10, params = params)
     pr = parallel_predict_aware(X_att, sampler2, params)
 
-    print(accuracy_score(y_test, pr) )
+    print('Adversary Aware Accuracy Attacked Data', accuracy_score(y_test, pr) )
 
 
     # Predict for more instances
