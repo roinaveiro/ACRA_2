@@ -9,7 +9,7 @@ Attacks for the ARA approach to Adversarial Classification
 
 def compute_probability(x, params):
     l = params["l"]
-    probs = np.zeros(l)
+    prb = np.zeros(l)
     for c in range(l):
         # Sample from p^*(x|x')
         sample = params["sampler_star"](x)
@@ -17,7 +17,8 @@ def compute_probability(x, params):
         probs = sample_label(sample, params["clf"],
             mode='evaluate', n_samples=0)[:,c]
         # Approximate with MC the value of the mean
-        probs[c] = np.mean(probs, axis = 0)
+        prb[c] = np.mean(probs, axis = 0)
+    return prb
 
 def attack_ARA(x, y, params):
     l = params["l"]
