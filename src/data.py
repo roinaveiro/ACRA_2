@@ -18,6 +18,18 @@ def get_spam_data(path):
     y = data.spam.values
     return X,y
 
+def get_malware_data(path):
+    '''
+    Read malware data
+    path -- directory where .csv is located
+
+    return dataset and labels
+    '''
+    data = pd.read_csv(path)
+    X = data.drop("label", axis=1).values
+    y = data.label.values
+    return X,y
+
 
 def generate_train_test(X, y, q=0.3):
     ''''
