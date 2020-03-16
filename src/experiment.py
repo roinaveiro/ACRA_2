@@ -4,6 +4,7 @@ from data import *
 from models import *
 from samplers import *
 from attacks import *
+from inference import *
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
@@ -13,10 +14,10 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
-    lr = True
+    lr = False
     X, y = get_malware_data("data/malware.csv")
     X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.1)
-    n=6
+    n=11
     print(X_train.shape)
 
     if lr:
@@ -33,6 +34,7 @@ if __name__ == '__main__':
         result = permutation_importance(clf, X_test, y_test, n_repeats=10,
                                 random_state=42, n_jobs=4)
         sorted_idx = result.importances_mean.argsort()
+        S = sorted_idx[:n]
 
 
     print('Adversary Unaware Accuracy Clean Data', accuracy_score(y_test, clf.predict(X_test)))
@@ -43,29 +45,29 @@ if __name__ == '__main__':
                 "var"    : 0.1,   # Proportion of max variance of betas
                 "ut"     :  np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0],
                     [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]), # Ut matrix for defender
-                "ut_mat" :  np.array([[0.0,0.2,0.4,0.6],[0.0,0.0,0.0,0.0],
+                "ut_mat" :  np.array([[0.0,0.7,0.7,0.7],[0.0,0.0,0.0,0.0],
                     [0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]), # Ut matrix for attacker rows is
                                             # what the classifier says, columns
                                             # real label!!!
                 "sampler_star" : lambda x: sample_original_instance_star(x,
-                 n_samples=40, rho=2, x=None, mode='sample', heuristic='uniform'),
+                 n_samples=40, rho=1, x=None, mode='sample', heuristic='uniform'),
                  ##
                  "clf" : clf,
-                 "tolerance" : 2, # For ABC
-                 "classes" : np.array([0.0,1.0,2.0,3.0]),
+                 "tolerance" : 4, # For ABC
+                 "classes" : np.array([0,1,2,3]),
                  "S"       : S, # Set of index representing covariates with
                                              # "sufficient" information
                  "X_train"   : X_train,
-                 "distance_to_original" : 2 # Numbers of changes allowed to adversary
+                 "distance_to_original" : 1 # Numbers of changes allowed to adversary
             }
 
     X_att = attack_set(X_test, y_test, params)
     print('Adversary Unaware Accuracy Attacked Data', accuracy_score(y_test, clf.predict(X_att)))
 
-    #sampler2 = lambda x: sample_original_instance(x, n_samples= 10, params = params)
-    #pr = parallel_predict_aware(X_att, sampler2, params)
+    sampler2 = lambda x: sample_original_instance(x, n_samples= 100, params = params)
+    pr = parallel_predict_aware(X_att, sampler2, params)
 
-    #print('Adversary Aware Accuracy Attacked Data', accuracy_score(y_test, pr) )
+    print('Adversary Aware Accuracy Attacked Data', accuracy_score(y_test, pr) )
 
 
 

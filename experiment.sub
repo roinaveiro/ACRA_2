@@ -1,0 +1,11 @@
+#!/bin/bash
+#$ -l h_vmem=128G
+#$ -j yes
+#$ -cwd
+
+# Load anaconda malware environment
+conda activate acra2
+# Run the executable
+python -u src/experiment.py > exp2.out
+# Deactivate anaconda environment
+conda deactivate

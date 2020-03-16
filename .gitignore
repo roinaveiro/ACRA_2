@@ -2,5 +2,7 @@
 *.out
 *.log
 *.dat
+*.sub.*
+*.ouy
 __pycache__/
 **/.ipynb_checkpoints/
