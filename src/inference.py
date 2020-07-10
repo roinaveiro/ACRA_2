@@ -50,8 +50,8 @@ def parallel_predict_aware(X_test, sampler, params):
     def predict_aware_par(i, X_test, sampler, params):
         return predict_aware(X_test[i], sampler, params)
     ##
-    num_cores=24 # it depends of the processor
-    preds = Parallel(n_jobs=num_cores)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(X_test.shape[0]))
+    #num_cores=4 # it depends of the processor
+    preds = Parallel(n_jobs=-1)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(X_test.shape[0]))
     return np.array(preds)
 
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
                  n_samples=40, rho=1, x=None, mode='sample', heuristic='uniform'),
                  ##
                  "clf" : clf,
-                 "tolerance" : 0, # For ABC
+                 "tolerance" : 3, # For ABC
                  "classes" : np.array([0,1]),
                  "S"       : S, # Set of index representing covariates with
                                              # "sufficient" information
