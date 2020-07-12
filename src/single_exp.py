@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
-    n_exp = 1
+    n_exp = 5
     n_samples = 1
     tolerance = 5
     n_cov = 11
     # flag = 'svm'
-    flag_grid = ['lr']#, 'rf', 'svm', 'nn']
+    flag_grid = ['lr', 'nn']
 
     X, y = get_spam_data("data/uciData.csv")
 
@@ -31,6 +31,8 @@ if __name__ == '__main__':
         X_train, X_test, y_train, y_test = generate_train_test(X, y, q=0.1)
 
         for j, flag in enumerate(flag_grid):
+
+            print(flag)
 
             clf, S = train_clf(X_train, y_train, n_cov, flag)
             acc_raw_clean = accuracy_score(y_test, clf.predict(X_test))
@@ -53,7 +55,7 @@ if __name__ == '__main__':
                          "S"       : S, # Set of index representing covariates with
                                                      # "sufficient" information
                          "X_train"   : X_train,
-                         "distance_to_original" : 1 # Numbers of changes allowed to adversary
+                         "distance_to_original" : 2 # Numbers of changes allowed to adversary
                     }
 
 
@@ -61,10 +63,22 @@ if __name__ == '__main__':
             acc_raw_att = accuracy_score(y_test, clf.predict(X_att))
             print("Accuracy on Tainted Data", acc_raw_att)
 
-            sampler = lambda x: sample_original_instance(x, n_samples= n_samples, params = params)
-            pr = parallel_predict_aware(X_att, sampler, params)
-            acc_acra_att =  accuracy_score(y_test, pr)
-            print("ACRA accuracy on Tainted Data", acc_acra_att)
+            ### Vanilla Adversarial Training (AT)
+            X_tr_att = attack_set(X_train, y_train, params)
+            clf_rob, S = train_clf(np.vstack([X_train, X_tr_att]), np.hstack([y_train, y_train]), n_cov, flag)
+
+            params["clf"] = clf
+            X_att = attack_set(X_test, y_test, params)
+            acc_raw_att = accuracy_score(y_test, clf_rob.predict(X_att))
+            print("Accuracy on Tainted Data After AT", acc_raw_att)
+
+
+
+
+            #sampler = lambda x: sample_original_instance(x, n_samples= n_samples, params = params)
+            #pr = parallel_predict_aware(X_att, sampler, params)
+            #acc_acra_att =  accuracy_score(y_test, pr)
+            #print("ACRA accuracy on Tainted Data", acc_acra_att)
 
         df = pd.DataFrame({"classifier":flag_grid, "acc_raw_clean":acc_raw_clean,
          "acc_raw_att":acc_raw_att, "acc_acra_att":acc_acra_att})
