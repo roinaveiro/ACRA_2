@@ -37,6 +37,16 @@ dependencies:
   - xz=5.2.4=h14c3975_4
   - zlib=1.2.11=h7b6447c_3
   - pip:
+    - attrs==19.3.0
+    - cycler==0.10.0
+    - eli5==0.10.1
+    - graphviz==0.14
+    - jinja2==2.11.2
+    - kiwisolver==1.1.0
+    - markupsafe==1.1.1
+    - matplotlib==3.2.0
+    - pyparsing==2.4.6
     - scikit-learn==0.22.2
-prefix: /home/roi/miniconda3/envs/acra2
+    - tabulate==0.8.7
+prefix: /LUSTRE/users/rnaveiro/miniconda3/envs/acra2
 

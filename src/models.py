@@ -53,7 +53,7 @@ def train_clf(X_train, y_train, n_cov, flag='lr'):
 
     if flag == 'nn':
         clf = MLPClassifier(solver='lbfgs', alpha=1e-5,
-                     hidden_layer_sizes=(5, 2), random_state=1)
+                     hidden_layer_sizes=(3, 2), random_state=1)
         clf.fit(X_train,y_train)
         sorted_idx = get_top_featues(X_train, y_train, clf=clf)
         S = sorted_idx[:n_cov]

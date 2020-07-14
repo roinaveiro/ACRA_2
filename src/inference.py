@@ -50,8 +50,8 @@ def parallel_predict_aware(X_test, sampler, params):
     def predict_aware_par(i, X_test, sampler, params):
         return predict_aware(X_test[i], sampler, params)
     ##
-    #num_cores=4 # it depends of the processor
-    preds = Parallel(n_jobs=-1)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(X_test.shape[0]))
+    num_cores=24 # it depends of the processor
+    preds = Parallel(n_jobs=num_cores)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(X_test.shape[0]))
     return np.array(preds)
 
 
