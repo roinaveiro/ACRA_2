@@ -16,7 +16,7 @@ if __name__ == '__main__':
     tolerance = 1
     n_cov = 11
     # flag = 'svm'
-    flag_grid = ['nn', 'svm', 'lr', 'rf']
+    flag_grid = ['nb'] # ['nn', 'svm', 'lr', 'rf']
 
     X, y = get_spam_data("data/uciData.csv")
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
         for j, flag in enumerate(flag_grid):
 
             clf, S = train_clf(X_train, y_train, n_cov, flag)
-            acc_raw_clean = accuracy_score(y_test, clf.predict(X_test))
+            acc_raw_clean[j] = accuracy_score(y_test, clf.predict(X_test))
             print( str(flag) + "accuracy on clean data", acc_raw_clean )
 
             params = {
@@ -58,16 +58,16 @@ if __name__ == '__main__':
 
 
             X_att = attack_set(X_test, y_test, params)
-            acc_raw_att = accuracy_score(y_test, clf.predict(X_att))
+            acc_raw_att[j] = accuracy_score(y_test, clf.predict(X_att))
             print( str(flag) + "accuracy on tainted data", acc_raw_att)
 
             sampler = lambda x: sample_original_instance(x, n_samples= n_samples, params = params)
             pr = parallel_predict_aware(X_att, sampler, params)
-            acc_acra_att =  accuracy_score(y_test, pr)
+            acc_acra_att[j] =  accuracy_score(y_test, pr)
             print( str(flag) + "ACRA accuracy on tainted data", acc_acra_att)
 
         df = pd.DataFrame({"classifier":flag_grid, "acc_raw_clean":acc_raw_clean,
          "acc_raw_att":acc_raw_att, "acc_acra_att":acc_acra_att})
         print('Writing Experiment ', i)
-        name = "results/exp_classifiers/" + "good_exp_classifiers" + str(i) + ".csv"
+        name = "results/exp_classifiers/" + "nb_good_exp_classifiers" + str(i) + ".csv"
         df.to_csv(name, index=False)

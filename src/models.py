@@ -3,6 +3,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.naive_bayes import BernoulliNB
 from sklearn.inspection import permutation_importance
 from sklearn import svm
 from data import *
@@ -65,6 +66,14 @@ def train_clf(X_train, y_train, n_cov, flag='lr'):
         sorted_idx = get_top_featues(X_train, y_train, clf=clf)
         S = sorted_idx[:n_cov]
         return clf, S
+
+    if flag == 'nb':
+        clf = BernoulliNB(alpha=1.0e-10)
+        clf.fit(X_train, y_train)
+        sorted_idx = get_top_featues(X_train, y_train, clf=clf)
+        S = sorted_idx[:n_cov]
+        return clf, S
+
 
 if __name__ == '__main__':
     X, y = get_spam_data("data/uciData.csv")
