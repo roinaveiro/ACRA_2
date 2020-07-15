@@ -16,7 +16,7 @@ if __name__ == '__main__':
     tolerance = 5
     n_cov = 11
     # flag = 'svm'
-    flag_grid = ['lr', 'nn']
+    flag_grid = ['bayes_nn']
 
     X, y = get_spam_data("data/uciData.csv")
 
@@ -63,14 +63,14 @@ if __name__ == '__main__':
             acc_raw_att = accuracy_score(y_test, clf.predict(X_att))
             print("Accuracy on Tainted Data", acc_raw_att)
 
-            ### Vanilla Adversarial Training (AT)
+            ### Robustiying models
             X_tr_att = attack_set(X_train, y_train, params)
             clf_rob, S = train_clf(np.vstack([X_train, X_tr_att]), np.hstack([y_train, y_train]), n_cov, flag)
 
             params["clf"] = clf
             X_att = attack_set(X_test, y_test, params)
-            acc_raw_att = accuracy_score(y_test, clf_rob.predict(X_att))
-            print("Accuracy on Tainted Data After AT", acc_raw_att)
+            acc_rob_att = accuracy_score(y_test, clf_rob.predict(X_att))
+            print("Accuracy on Tainted Data After AT", acc_rob_att)
 
 
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
             #print("ACRA accuracy on Tainted Data", acc_acra_att)
 
         df = pd.DataFrame({"classifier":flag_grid, "acc_raw_clean":acc_raw_clean,
-         "acc_raw_att":acc_raw_att, "acc_acra_att":acc_acra_att})
+         "acc_raw_att":acc_raw_att, "acc_rob_att":acc_rob_att})
         print('Writing Experiment ', i)
         name = "results/exp_classifiers/" + "exp_classifiers" + str(i) + ".csv"
         df.to_csv(name, index=False)
