@@ -53,7 +53,10 @@ if __name__ == '__main__':
                          "S"       : S, # Set of index representing covariates with
                                                      # "sufficient" information
                          "X_train"   : X_train,
-                         "distance_to_original" : 2 # Numbers of changes allowed to adversary
+                         "distance_to_original" : 2, # Numbers of changes allowed to adversary
+                         "stop" : True, # Stopping condition for ABC
+                         "max_iter": 1000 ## max iterations for ABC when stop=True
+
                     }
 
 

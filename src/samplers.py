@@ -22,13 +22,31 @@ def sample_original_instance(x_mod, n_samples, params):
     for i in range(n_samples): ## Parallelize
         dist = params["tolerance"] + 1 # Condition to enter in the while loop
         ##
-        while dist > tolerance:
-            x = sample_instance(X_train)[0] ## Watch out! Dimensions
-            probs = sample_label(x, clf)[0]
-            y = np.random.choice(params["classes"], p=probs)
-            x_tilde = sample_transformed_instance(x, y, params)
-            dist = distance(x_tilde[S], x_mod[S])
-        samples[i] = x
+        if params["stop"]:
+            for j in range(params["max_iter"]):
+                x = sample_instance(X_train)[0] ## Watch out! Dimensions
+                probs = sample_label(x, clf)[0]
+                y = np.random.choice(params["classes"], p=probs)
+                x_tilde = sample_transformed_instance(x, y, params)
+                dist_tilde = distance(x_tilde[S], x_mod[S])
+                if dist_tilde <= tolerance:
+                    dist = dist_tilde
+                    x_final = x
+                    break
+                elif dist_tilde < dist:
+                    x_final = x
+                    dist = dist_tilde
+            print(dist)
+            samples[i] = x_final
+
+        else:
+            while dist > tolerance:
+                x = sample_instance(X_train)[0] ## Watch out! Dimensions
+                probs = sample_label(x, clf)[0]
+                y = np.random.choice(params["classes"], p=probs)
+                x_tilde = sample_transformed_instance(x, y, params)
+                dist = distance(x_tilde[S], x_mod[S])
+            samples[i] = x
     return samples
 
 def sample_instance(X_train, n_samples=1):
