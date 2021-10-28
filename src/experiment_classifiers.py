@@ -55,7 +55,7 @@ if __name__ == '__main__':
                          "X_train"   : X_train,
                          "distance_to_original" : 2, # Numbers of changes allowed to adversary
                          "stop" : True, # Stopping condition for ABC
-                         "max_iter": 1000 ## max iterations for ABC when stop=True
+                         "max_iter": 1 ## max iterations for ABC when stop=True
 
                     }
 

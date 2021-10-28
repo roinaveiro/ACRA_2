@@ -44,6 +44,7 @@ def predict_aware(x_mod, sampler, params):
     # Compute
     exp_utility = np.dot( params["ut"], np.mean(original_probabilities, axis = 0).transpose() )
     # Return index with maximum utility
+    print("Done")
     return np.argmax(exp_utility, axis=0)
 
 def parallel_predict_aware(X_test, sampler, params):
@@ -51,7 +52,7 @@ def parallel_predict_aware(X_test, sampler, params):
         return predict_aware(X_test[i], sampler, params)
     ##
     num_cores=24 # it depends of the processor
-    preds = Parallel(n_jobs=num_cores)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(X_test.shape[0]))
+    preds = Parallel(n_jobs=-1)(delayed(predict_aware_par)(i, X_test, sampler, params) for i in range(X_test.shape[0]))
     return np.array(preds)
 
 

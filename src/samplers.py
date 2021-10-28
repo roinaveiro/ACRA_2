@@ -21,6 +21,7 @@ def sample_original_instance(x_mod, n_samples, params):
     samples = np.zeros([n_samples, x_mod.shape[0]], dtype=int)
     for i in range(n_samples): ## Parallelize
         dist = params["tolerance"] + 1 # Condition to enter in the while loop
+        x_final = sample_instance(X_train)[0]
         ##
         if params["stop"]:
             for j in range(params["max_iter"]):
@@ -36,7 +37,6 @@ def sample_original_instance(x_mod, n_samples, params):
                 elif dist_tilde < dist:
                     x_final = x
                     dist = dist_tilde
-            print(dist)
             samples[i] = x_final
 
         else:
