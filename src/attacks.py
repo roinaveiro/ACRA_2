@@ -47,7 +47,7 @@ def attack_par(i, X, y, params):
     return attack_ARA(X[i], y[i], params)
 
 def attack_set(X, y, params):
-    num_cores=4 # it depends of the processor
+    num_cores=16 # it depends of the processor
     atts = Parallel(n_jobs=num_cores)(delayed(attack_par)(i, X, y, params) for i in range(X.shape[0]))
     return np.array(atts)
 
